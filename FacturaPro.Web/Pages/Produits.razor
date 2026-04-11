@@ -1,0 +1,180 @@
+@page "/produits"
+@inject IProduitService ProduitService
+
+<PageTitle>Produits — FacturaPro TN</PageTitle>
+
+<div class="page-header">
+    <h1><i class="fas fa-box"></i> Gestion des Produits</h1>
+    <button class="btn btn-primary" @onclick="NouveauProduit">
+        <i class="fas fa-plus"></i> Nouveau Produit
+    </button>
+</div>
+
+<div class="search-bar">
+    <div class="input-group">
+        <span class="input-group-text"><i class="fas fa-search"></i></span>
+        <input type="text" class="form-control" placeholder="Rechercher par désignation ou référence..."
+               value="@searchTerm" @oninput="OnSearch" />
+    </div>
+</div>
+
+@if (isLoading)
+{
+    <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+}
+else
+{
+    <div class="card">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Référence</th>
+                        <th>Désignation</th>
+                        <th class="text-end">Prix HT (TND)</th>
+                        <th class="text-center">Taux TVA</th>
+                        <th class="text-end">Prix TTC (TND)</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!produits.Any())
+                    {
+                        <tr><td colspan="6" class="text-center text-muted py-4">Aucun produit trouvé</td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var p in produits)
+                        {
+                            <tr>
+                                <td><code>@(p.Reference ?? "—")</code></td>
+                                <td class="fw-bold">@p.Designation</td>
+                                <td class="text-end">@p.PrixUnitaireHT.ToString("N3")</td>
+                                <td class="text-center">
+                                    <span class="badge @GetTVABadgeClass((int)p.TauxTVA)">@((int)p.TauxTVA)%</span>
+                                </td>
+                                <td class="text-end fw-bold text-primary">
+                                    @((p.PrixUnitaireHT * (1 + (decimal)p.TauxTVA / 100)).ToString("N3"))
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => EditProduit(p.Id)">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteProduit(p.Id)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@if (showModal)
+{
+    <div class="modal-overlay">
+        <div class="modal-dialog-custom">
+            <div class="modal-header-custom">
+                <h5>@(editingProduit.Id == 0 ? "Nouveau Produit" : "Modifier Produit")</h5>
+                <button class="btn-close-custom" @onclick="CloseModal">✕</button>
+            </div>
+            <div class="modal-body-custom">
+                <EditForm Model="editingProduit" OnValidSubmit="SaveProduit">
+                    <DataAnnotationsValidator />
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">Désignation *</label>
+                            <InputText class="form-control" @bind-Value="editingProduit.Designation" />
+                            <ValidationMessage For="@(() => editingProduit.Designation)" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Référence</label>
+                            <InputText class="form-control" @bind-Value="editingProduit.Reference" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Prix Unitaire HT (TND) *</label>
+                            <InputNumber class="form-control" @bind-Value="editingProduit.PrixUnitaireHT" />
+                            <ValidationMessage For="@(() => editingProduit.PrixUnitaireHT)" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Taux TVA *</label>
+                            <InputSelect class="form-select" @bind-Value="editingProduit.TauxTVA">
+                                <option value="@TauxTVA.Exonere">0% — Exonéré</option>
+                                <option value="@TauxTVA.Pct7">7%</option>
+                                <option value="@TauxTVA.Pct13">13%</option>
+                                <option value="@TauxTVA.Pct19">19%</option>
+                            </InputSelect>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <InputTextArea class="form-control" @bind-Value="editingProduit.Description" rows="2" />
+                    </div>
+                    <div class="modal-footer-custom">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseModal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Enregistrer
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Produit> produits = new();
+    private bool isLoading = true;
+    private string searchTerm = "";
+    private bool showModal = false;
+    private Produit editingProduit = new();
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        produits = await ProduitService.GetAllAsync(searchTerm);
+        isLoading = false;
+    }
+
+    private async Task OnSearch(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? "";
+        await LoadAsync();
+    }
+
+    private void NouveauProduit() { editingProduit = new Produit(); showModal = true; }
+
+    private async Task EditProduit(int id)
+    {
+        editingProduit = await ProduitService.GetByIdAsync(id) ?? new Produit();
+        showModal = true;
+    }
+
+    private async Task SaveProduit()
+    {
+        if (editingProduit.Id == 0) await ProduitService.CreateAsync(editingProduit);
+        else await ProduitService.UpdateAsync(editingProduit);
+        showModal = false;
+        await LoadAsync();
+    }
+
+    private async Task DeleteProduit(int id) { await ProduitService.DeleteAsync(id); await LoadAsync(); }
+
+    private void CloseModal() => showModal = false;
+
+    private string GetTVABadgeClass(int taux) => taux switch
+    {
+        0  => "bg-secondary",
+        7  => "bg-info",
+        13 => "bg-warning text-dark",
+        19 => "bg-danger",
+        _  => "bg-primary"
+    };
+}

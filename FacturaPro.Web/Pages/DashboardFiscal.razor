@@ -1,0 +1,127 @@
+@page "/dashboard-fiscal"
+@inject IDashboardService DashboardService
+@inject IJSRuntime JS
+
+<PageTitle>Dashboard Fiscal — FacturaPro TN</PageTitle>
+
+<div class="page-header">
+    <h1><i class="fas fa-chart-pie"></i> Tableau de Bord Fiscal</h1>
+    <select class="form-select w-auto" @bind="annee" @bind:after="LoadAsync">
+        @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 4; y--)
+        { <option value="@y">@y</option> }
+    </select>
+</div>
+
+@if (isLoading)
+{
+    <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+}
+else if (data != null)
+{
+    <div class="kpi-grid">
+        <div class="kpi-card kpi-blue">
+            <div class="kpi-icon"><i class="fas fa-percentage"></i></div>
+            <div class="kpi-content">
+                <div class="kpi-value">@data.TVATotaleCollectee.ToString("N3") TND</div>
+                <div class="kpi-label">TVA Totale Collectée</div>
+            </div>
+        </div>
+        <div class="kpi-card kpi-red">
+            <div class="kpi-icon"><i class="fas fa-stamp"></i></div>
+            <div class="kpi-content">
+                <div class="kpi-value">@data.MontantTotalTimbre.ToString("N3") TND</div>
+                <div class="kpi-label">Total Timbres Fiscaux</div>
+            </div>
+        </div>
+        <div class="kpi-card kpi-green">
+            <div class="kpi-icon"><i class="fas fa-file-invoice"></i></div>
+            <div class="kpi-content">
+                <div class="kpi-value">@data.NombreFactures</div>
+                <div class="kpi-label">Factures Émises</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Pie Chart TVA par taux -->
+        <div class="col-md-5 mb-4">
+            <div class="card h-100">
+                <div class="card-header"><h5><i class="fas fa-chart-pie"></i> Répartition TVA par Taux</h5></div>
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    <canvas id="tvaChart" style="max-height:280px"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table TVA par taux -->
+        <div class="col-md-7 mb-4">
+            <div class="card h-100">
+                <div class="card-header"><h5><i class="fas fa-table"></i> TVA Ventilée par Taux</h5></div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>Taux TVA</th>
+                                <th class="text-end">Montant (TND)</th>
+                                <th class="text-end">% du Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in data.TVAParTaux)
+                            {
+                                var pct = data.TVATotaleCollectee == 0 ? 0 : item.Value / data.TVATotaleCollectee * 100;
+                                <tr>
+                                    <td><span class="badge bg-primary fs-6">@item.Key</span></td>
+                                    <td class="text-end fw-bold">@item.Value.ToString("N3")</td>
+                                    <td class="text-end">
+                                        <div class="d-flex align-items-center justify-content-end gap-2">
+                                            <div class="progress flex-grow-1" style="height:8px">
+                                                <div class="progress-bar" style="width:@pct%"></div>
+                                            </div>
+                                            @pct.ToString("N1")%
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-secondary fw-bold">
+                            <tr>
+                                <td>TOTAL</td>
+                                <td class="text-end">@data.TVATotaleCollectee.ToString("N3") TND</td>
+                                <td class="text-end">100%</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private DashboardFiscalDto? data;
+    private bool isLoading = true;
+    private int annee = DateTime.Now.Year;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        data = await DashboardService.GetFiscalDashboardAsync(annee);
+        isLoading = false;
+        await Task.Delay(100);
+        await RenderCharts();
+    }
+
+    private async Task RenderCharts()
+    {
+        if (data == null || !data.TVAParTaux.Any()) return;
+
+        var labels = data.TVAParTaux.Keys.ToArray();
+        var values = data.TVAParTaux.Values.Select(v => (double)v).ToArray();
+        var colors = new[] { "#2980b9", "#27ae60", "#f39c12", "#e74c3c" };
+
+        await JS.InvokeVoidAsync("renderPieChart", "tvaChart", labels, values, colors);
+    }
+}

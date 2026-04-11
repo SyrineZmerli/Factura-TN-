@@ -1,0 +1,164 @@
+@page "/"
+@inject IDashboardService DashboardService
+@inject IFactureService FactureService
+
+<PageTitle>Tableau de Bord — FacturaPro TN</PageTitle>
+
+<div class="dashboard-header">
+    <h1><i class="fas fa-tachometer-alt"></i> Tableau de Bord</h1>
+    <p class="text-muted">Vue d'ensemble de votre activité @annee</p>
+</div>
+
+@if (isLoading)
+{
+    <div class="loading-spinner">
+        <div class="spinner-border text-primary" role="status"></div>
+        <span>Chargement...</span>
+    </div>
+}
+else
+{
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+        <div class="kpi-card kpi-blue">
+            <div class="kpi-icon"><i class="fas fa-money-bill-wave"></i></div>
+            <div class="kpi-content">
+                <div class="kpi-value">@ventes?.ChiffreAffairesTTC.ToString("N3") TND</div>
+                <div class="kpi-label">Chiffre d'Affaires TTC</div>
+            </div>
+        </div>
+        <div class="kpi-card kpi-green">
+            <div class="kpi-icon"><i class="fas fa-receipt"></i></div>
+            <div class="kpi-content">
+                <div class="kpi-value">@ventes?.ChiffreAffairesHT.ToString("N3") TND</div>
+                <div class="kpi-label">Chiffre d'Affaires HT</div>
+            </div>
+        </div>
+        <div class="kpi-card kpi-orange">
+            <div class="kpi-icon"><i class="fas fa-percentage"></i></div>
+            <div class="kpi-content">
+                <div class="kpi-value">@fiscal?.TVATotaleCollectee.ToString("N3") TND</div>
+                <div class="kpi-label">TVA Collectée</div>
+            </div>
+        </div>
+        <div class="kpi-card kpi-red">
+            <div class="kpi-icon"><i class="fas fa-stamp"></i></div>
+            <div class="kpi-content">
+                <div class="kpi-value">@fiscal?.MontantTotalTimbre.ToString("N3") TND</div>
+                <div class="kpi-label">Timbres Fiscaux</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TVA par taux -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-pie"></i> TVA par Taux</h5>
+                </div>
+                <div class="card-body">
+                    @if (fiscal?.TVAParTaux != null)
+                    {
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Taux</th>
+                                    <th class="text-end">Montant TVA (TND)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in fiscal.TVAParTaux)
+                                {
+                                    <tr>
+                                        <td><span class="badge bg-primary">@item.Key</span></td>
+                                        <td class="text-end fw-bold">@item.Value.ToString("N3")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Clients -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-crown"></i> Top Clients</h5>
+                </div>
+                <div class="card-body">
+                    @if (ventes?.VentesParClient != null)
+                    {
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th class="text-end">CA HT (TND)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var c in ventes.VentesParClient.Take(5))
+                                {
+                                    <tr>
+                                        <td>@c.ClientNom</td>
+                                        <td class="text-end">@c.MontantHT.ToString("N3")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ventes par Mois -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5><i class="fas fa-chart-line"></i> Ventes Mensuelles @annee</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Mois</th>
+                        <th class="text-end">CA HT (TND)</th>
+                        <th class="text-end">CA TTC (TND)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var m in ventes?.VentesParMois ?? new())
+                    {
+                        <tr>
+                            <td>@m.Periode</td>
+                            <td class="text-end">@m.MontantHT.ToString("N3")</td>
+                            <td class="text-end fw-bold text-primary">@m.MontantTTC.ToString("N3")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@code {
+    private DashboardFiscalDto? fiscal;
+    private DashboardVentesDto? ventes;
+    private bool isLoading = true;
+    private int annee = DateTime.Now.Year;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        isLoading = true;
+        fiscal = await DashboardService.GetFiscalDashboardAsync(annee);
+        ventes = await DashboardService.GetVentesDashboardAsync(annee);
+        isLoading = false;
+    }
+}

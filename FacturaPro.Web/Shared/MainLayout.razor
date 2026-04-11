@@ -1,0 +1,52 @@
+@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+
+<div class="page">
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <i class="fas fa-file-invoice-dollar"></i>
+            <span>FacturaPro TN</span>
+        </div>
+        <nav class="sidebar-nav">
+            <NavLink class="nav-item" href="" Match="NavLinkMatch.All">
+                <i class="fas fa-tachometer-alt"></i> Tableau de bord
+            </NavLink>
+            <div class="nav-section">GESTION</div>
+            <NavLink class="nav-item" href="clients">
+                <i class="fas fa-users"></i> Clients
+            </NavLink>
+            <NavLink class="nav-item" href="produits">
+                <i class="fas fa-box"></i> Produits
+            </NavLink>
+            <NavLink class="nav-item" href="factures">
+                <i class="fas fa-file-invoice"></i> Factures
+            </NavLink>
+            <div class="nav-section">RAPPORTS</div>
+            <NavLink class="nav-item" href="dashboard-fiscal">
+                <i class="fas fa-chart-pie"></i> Dashboard Fiscal
+            </NavLink>
+            <NavLink class="nav-item" href="dashboard-ventes">
+                <i class="fas fa-chart-bar"></i> Dashboard Ventes
+            </NavLink>
+            <div class="nav-section">CONFIGURATION</div>
+            <NavLink class="nav-item" href="parametres">
+                <i class="fas fa-cog"></i> Paramètres
+            </NavLink>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <div class="top-bar-title"></div>
+            <div class="top-bar-right">
+                <span class="badge bg-success">
+                    <i class="fas fa-circle"></i> En ligne
+                </span>
+            </div>
+        </div>
+        <div class="content-body">
+            @Body
+        </div>
+    </div>
+</div>

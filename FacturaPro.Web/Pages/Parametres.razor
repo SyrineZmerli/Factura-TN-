@@ -1,0 +1,89 @@
+@page "/parametres"
+@inject IFactureService FactureService
+
+<PageTitle>Paramètres — FacturaPro TN</PageTitle>
+
+<div class="page-header">
+    <h1><i class="fas fa-cog"></i> Paramètres de l'Application</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><h5>Configuration Fiscale</h5></div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Montant du Timbre Fiscal (TND)</label>
+                    <input type="number" class="form-control" @bind="timbreFiscal" step="0.001" min="0" />
+                    <div class="form-text">Valeur appliquée par défaut sur chaque facture.</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Taux TVA par défaut</label>
+                    <select class="form-select" @bind="tauxDefaut">
+                        <option value="0">0% — Exonéré</option>
+                        <option value="7">7%</option>
+                        <option value="13">13%</option>
+                        <option value="19">19%</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" @onclick="SaveParams">
+                    <i class="fas fa-save"></i> Enregistrer
+                </button>
+                @if (saved)
+                {
+                    <span class="text-success ms-3"><i class="fas fa-check"></i> Sauvegardé !</span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><h5>Informations Société</h5></div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Raison Sociale</label>
+                    <input type="text" class="form-control" @bind="raisonSociale" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Matricule Fiscal</label>
+                    <input type="text" class="form-control" @bind="matriculeFiscale" placeholder="0000000/A/M/000" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Adresse</label>
+                    <textarea class="form-control" @bind="adresse" rows="2"></textarea>
+                </div>
+                <button class="btn btn-primary" @onclick="SaveParams">
+                    <i class="fas fa-save"></i> Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header"><h5><i class="fas fa-info-circle"></i> À propos</h5></div>
+    <div class="card-body">
+        <p><strong>FacturaPro TN</strong> — Application de facturation conforme au modèle tunisien.</p>
+        <p class="text-muted">Version 1.0 — Développé avec Blazor Server + EF Core 8 + SQL Server</p>
+        <p class="text-muted">Taux TVA supportés : 0%, 7%, 13%, 19% conformément à la législation fiscale tunisienne.</p>
+    </div>
+</div>
+
+@code {
+    private decimal timbreFiscal = 1.000m;
+    private int tauxDefaut = 19;
+    private string raisonSociale = "Mon Entreprise SARL";
+    private string matriculeFiscale = "0000000/A/M/000";
+    private string adresse = "";
+    private bool saved = false;
+
+    private async Task SaveParams()
+    {
+        // In a real app, save to DB via ParametreService
+        saved = true;
+        await Task.Delay(2000);
+        saved = false;
+        StateHasChanged();
+    }
+}

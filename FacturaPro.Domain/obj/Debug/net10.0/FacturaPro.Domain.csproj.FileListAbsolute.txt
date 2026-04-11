@@ -1,0 +1,11 @@
+D:\projet .net\FacturaPro\FacturaPro.Domain\bin\Debug\net10.0\FacturaPro.Domain.deps.json
+D:\projet .net\FacturaPro\FacturaPro.Domain\bin\Debug\net10.0\FacturaPro.Domain.dll
+D:\projet .net\FacturaPro\FacturaPro.Domain\bin\Debug\net10.0\FacturaPro.Domain.pdb
+D:\projet .net\FacturaPro\FacturaPro.Domain\obj\Debug\net10.0\FacturaPro.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\projet .net\FacturaPro\FacturaPro.Domain\obj\Debug\net10.0\FacturaPro.Domain.AssemblyInfoInputs.cache
+D:\projet .net\FacturaPro\FacturaPro.Domain\obj\Debug\net10.0\FacturaPro.Domain.AssemblyInfo.cs
+D:\projet .net\FacturaPro\FacturaPro.Domain\obj\Debug\net10.0\FacturaPro.Domain.csproj.CoreCompileInputs.cache
+D:\projet .net\FacturaPro\FacturaPro.Domain\obj\Debug\net10.0\FacturaPro.Domain.dll
+D:\projet .net\FacturaPro\FacturaPro.Domain\obj\Debug\net10.0\refint\FacturaPro.Domain.dll
+D:\projet .net\FacturaPro\FacturaPro.Domain\obj\Debug\net10.0\FacturaPro.Domain.pdb
+D:\projet .net\FacturaPro\FacturaPro.Domain\obj\Debug\net10.0\ref\FacturaPro.Domain.dll

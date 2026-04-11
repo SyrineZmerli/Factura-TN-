@@ -1,0 +1,17 @@
+D:\projet .net\FacturaPro\FacturaPro.Application\obj\Debug\net8.0\FacturaPro.Application.csproj.AssemblyReference.cache
+D:\projet .net\FacturaPro\FacturaPro.Application\obj\Debug\net8.0\FacturaPro.Application.GeneratedMSBuildEditorConfig.editorconfig
+D:\projet .net\FacturaPro\FacturaPro.Application\obj\Debug\net8.0\FacturaPro.Application.AssemblyInfoInputs.cache
+D:\projet .net\FacturaPro\FacturaPro.Application\obj\Debug\net8.0\FacturaPro.Application.AssemblyInfo.cs
+D:\projet .net\FacturaPro\FacturaPro.Application\obj\Debug\net8.0\FacturaPro.Application.csproj.CoreCompileInputs.cache
+D:\projet .net\FacturaPro\FacturaPro.Application\bin\Debug\net8.0\FacturaPro.Application.deps.json
+D:\projet .net\FacturaPro\FacturaPro.Application\bin\Debug\net8.0\FacturaPro.Application.dll
+D:\projet .net\FacturaPro\FacturaPro.Application\bin\Debug\net8.0\FacturaPro.Application.pdb
+D:\projet .net\FacturaPro\FacturaPro.Application\bin\Debug\net8.0\FacturaPro.Domain.dll
+D:\projet .net\FacturaPro\FacturaPro.Application\bin\Debug\net8.0\FacturaPro.Infrastructure.dll
+D:\projet .net\FacturaPro\FacturaPro.Application\bin\Debug\net8.0\FacturaPro.Domain.pdb
+D:\projet .net\FacturaPro\FacturaPro.Application\bin\Debug\net8.0\FacturaPro.Infrastructure.pdb
+D:\projet .net\FacturaPro\FacturaPro.Application\obj\Debug\net8.0\FacturaP.2E648D18.Up2Date
+D:\projet .net\FacturaPro\FacturaPro.Application\obj\Debug\net8.0\FacturaPro.Application.dll
+D:\projet .net\FacturaPro\FacturaPro.Application\obj\Debug\net8.0\refint\FacturaPro.Application.dll
+D:\projet .net\FacturaPro\FacturaPro.Application\obj\Debug\net8.0\FacturaPro.Application.pdb
+D:\projet .net\FacturaPro\FacturaPro.Application\obj\Debug\net8.0\ref\FacturaPro.Application.dll

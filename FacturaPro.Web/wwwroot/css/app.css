@@ -1,0 +1,181 @@
+/* ── FacturaPro TN — Global CSS ── */
+:root {
+    --primary: #1a3c5e;
+    --secondary: #2980b9;
+    --accent: #e74c3c;
+    --success: #27ae60;
+    --warning: #f39c12;
+    --light: #f4f6f9;
+    --sidebar-width: 260px;
+}
+
+* { box-sizing: border-box; }
+body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; }
+
+/* ── Layout ── */
+.page { display: flex; min-height: 100vh; }
+
+.sidebar {
+    width: var(--sidebar-width);
+    background: var(--primary);
+    position: fixed; top: 0; left: 0; height: 100vh;
+    overflow-y: auto; z-index: 100;
+    display: flex; flex-direction: column;
+}
+
+.sidebar-brand {
+    padding: 1.5rem 1.2rem;
+    font-size: 1.2rem; font-weight: 700;
+    color: white; border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex; align-items: center; gap: 0.6rem;
+}
+.sidebar-brand i { color: #f39c12; font-size: 1.4rem; }
+
+.sidebar-nav { padding: 1rem 0; }
+
+.nav-item {
+    display: flex; align-items: center; gap: 0.7rem;
+    padding: 0.7rem 1.2rem; color: rgba(255,255,255,0.75);
+    text-decoration: none; transition: all 0.2s;
+    font-size: 0.92rem;
+}
+.nav-item:hover, .nav-item.active {
+    background: rgba(255,255,255,0.12);
+    color: white; padding-left: 1.5rem;
+}
+.nav-item i { width: 18px; text-align: center; }
+
+.nav-section {
+    padding: 1rem 1.2rem 0.3rem;
+    font-size: 0.7rem; font-weight: 700;
+    color: rgba(255,255,255,0.4); letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.main-content {
+    margin-left: var(--sidebar-width);
+    flex: 1; display: flex; flex-direction: column; min-height: 100vh;
+}
+
+.top-bar {
+    background: white; border-bottom: 1px solid #e0e0e0;
+    padding: 0.9rem 1.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.content-body { padding: 1.5rem; }
+
+/* ── Page Header ── */
+.page-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1.5rem;
+}
+.page-header h1 {
+    font-size: 1.5rem; font-weight: 700;
+    color: var(--primary); margin: 0;
+}
+
+/* ── KPI Cards ── */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem; margin-bottom: 1rem;
+}
+
+.kpi-card {
+    border-radius: 12px; padding: 1.2rem 1.4rem;
+    display: flex; align-items: center; gap: 1rem;
+    color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+.kpi-blue   { background: linear-gradient(135deg, #2980b9, #1a5f85); }
+.kpi-green  { background: linear-gradient(135deg, #27ae60, #1e8449); }
+.kpi-orange { background: linear-gradient(135deg, #f39c12, #d68910); }
+.kpi-red    { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+
+.kpi-icon { font-size: 2rem; opacity: 0.85; }
+.kpi-value { font-size: 1.3rem; font-weight: 700; line-height: 1.2; }
+.kpi-label { font-size: 0.78rem; opacity: 0.85; margin-top: 2px; }
+
+/* ── Cards ── */
+.card { border: none; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.card-header {
+    background: white; border-bottom: 1px solid #eee;
+    border-radius: 10px 10px 0 0 !important; padding: 0.9rem 1.2rem;
+}
+.card-header h5, .card-header h6 { margin: 0; color: var(--primary); font-weight: 600; }
+
+/* ── Search Bar ── */
+.search-bar { margin-bottom: 1rem; }
+.search-bar .input-group-text { background: white; }
+
+/* ── Modal ── */
+.modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000; display: flex;
+    align-items: center; justify-content: center;
+}
+.modal-dialog-custom {
+    background: white; border-radius: 12px;
+    width: 600px; max-width: 95vw;
+    max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.modal-header-custom {
+    padding: 1rem 1.4rem;
+    border-bottom: 1px solid #eee;
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--primary); color: white; border-radius: 12px 12px 0 0;
+}
+.modal-header-custom h5 { margin: 0; font-size: 1rem; }
+.btn-close-custom {
+    background: none; border: none;
+    color: white; font-size: 1.1rem; cursor: pointer; padding: 0;
+}
+.modal-body-custom { padding: 1.4rem; }
+.modal-footer-custom {
+    display: flex; justify-content: flex-end; gap: 0.5rem;
+    padding-top: 1rem; border-top: 1px solid #eee; margin-top: 1rem;
+}
+
+/* ── Totals Card ── */
+.totals-card {
+    background: white; border-radius: 10px;
+    border: 2px solid #e0e0e0; overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.total-row {
+    display: flex; justify-content: space-between;
+    padding: 0.6rem 1rem; border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9rem;
+}
+.total-ttc {
+    background: var(--primary); color: white;
+    font-size: 1.05rem; font-weight: 700;
+}
+
+/* ── Loading ── */
+.loading-spinner {
+    display: flex; align-items: center; justify-content: center;
+    gap: 1rem; padding: 3rem; color: var(--secondary);
+}
+
+/* ── Dashboard Header ── */
+.dashboard-header { margin-bottom: 1.5rem; }
+.dashboard-header h1 { color: var(--primary); font-size: 1.6rem; font-weight: 700; }
+
+/* ── Utilities ── */
+.table th { font-weight: 600; font-size: 0.85rem; }
+.badge { font-size: 0.78rem; padding: 0.3em 0.6em; }
+.btn { border-radius: 6px; font-size: 0.88rem; }
+.form-label { font-size: 0.88rem; color: #555; }
+
+#blazor-error-ui {
+    background: var(--accent); color: white;
+    padding: 0.6rem 1rem;
+    position: fixed; bottom: 0; right: 0;
+    display: none; z-index: 9999; border-radius: 6px 0 0 0;
+}
+#blazor-error-ui .dismiss { cursor: pointer; margin-left: 1rem; }

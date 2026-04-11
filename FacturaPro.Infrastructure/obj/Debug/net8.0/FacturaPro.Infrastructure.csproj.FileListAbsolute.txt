@@ -1,0 +1,17 @@
+D:\projet .net\FacturaPro\FacturaPro.Infrastructure\bin\Debug\net8.0\FacturaPro.Infrastructure.deps.json
+D:\projet .net\FacturaPro\FacturaPro.Infrastructure\bin\Debug\net8.0\FacturaPro.Infrastructure.runtimeconfig.json
+D:\projet .net\FacturaPro\FacturaPro.Infrastructure\bin\Debug\net8.0\FacturaPro.Infrastructure.dll
+D:\projet .net\FacturaPro\FacturaPro.Infrastructure\bin\Debug\net8.0\FacturaPro.Infrastructure.pdb
+D:\projet .net\FacturaPro\FacturaPro.Infrastructure\bin\Debug\net8.0\FacturaPro.Domain.dll
+D:\projet .net\FacturaPro\FacturaPro.Infrastructure\bin\Debug\net8.0\FacturaPro.Domain.pdb
+D:\projet .net\FacturaPro\FacturaPro.Infrastructure\obj\Debug\net8.0\FacturaPro.Infrastructure.csproj.AssemblyReference.cache
+D:\projet .net\FacturaPro\FacturaPro.Infrastructure\obj\Debug\net8.0\FacturaPro.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\projet .net\FacturaPro\FacturaPro.Infrastructure\obj\Debug\net8.0\FacturaPro.Infrastructure.AssemblyInfoInputs.cache
+D:\projet .net\FacturaPro\FacturaPro.Infrastructure\obj\Debug\net8.0\FacturaPro.Infrastructure.AssemblyInfo.cs
+D:\projet .net\FacturaPro\FacturaPro.Infrastructure\obj\Debug\net8.0\FacturaPro.Infrastructure.csproj.CoreCompileInputs.cache
+D:\projet .net\FacturaPro\FacturaPro.Infrastructure\obj\Debug\net8.0\FacturaP.CC3EF679.Up2Date
+D:\projet .net\FacturaPro\FacturaPro.Infrastructure\obj\Debug\net8.0\FacturaPro.Infrastructure.dll
+D:\projet .net\FacturaPro\FacturaPro.Infrastructure\obj\Debug\net8.0\refint\FacturaPro.Infrastructure.dll
+D:\projet .net\FacturaPro\FacturaPro.Infrastructure\obj\Debug\net8.0\FacturaPro.Infrastructure.pdb
+D:\projet .net\FacturaPro\FacturaPro.Infrastructure\obj\Debug\net8.0\FacturaPro.Infrastructure.genruntimeconfig.cache
+D:\projet .net\FacturaPro\FacturaPro.Infrastructure\obj\Debug\net8.0\ref\FacturaPro.Infrastructure.dll
