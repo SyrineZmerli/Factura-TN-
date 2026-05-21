@@ -1,0 +1,174 @@
+@page "/register"
+@layout EmptyLayout
+@inject IAuthService AuthService
+@inject SessionUtilisateur Session
+@inject NavigationManager Nav
+
+
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a3c5e,#2980b9);padding:1rem;">
+    <div style="background:white;border-radius:16px;padding:2.5rem;width:460px;max-width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+
+        <!-- Header -->
+        <div style="text-align:center;margin-bottom:2rem;">
+            <i class="fas fa-user-plus" style="font-size:3rem;color:#27ae60;"></i>
+            <h2 style="color:#1a3c5e;margin:0.5rem 0 0;font-weight:700;">Créer un compte</h2>
+            <p style="color:#666;font-size:0.9rem;margin:0.3rem 0 0;">Inscription  FacturaPro TN</p>
+        </div>
+
+        <!-- Success message -->
+        @if (succes)
+        {
+            <div style="background:#d4edda;color:#155724;padding:1rem;border-radius:8px;margin-bottom:1rem;text-align:center;">
+                <i class="fas fa-check-circle fa-2x mb-2 d-block"></i>
+                <strong>Compte créé avec succès !</strong><br />
+                <a href="/login" style="color:#155724;font-weight:600;text-decoration:underline;">
+                    → Se connecter
+                </a>
+            </div>
+        }
+        else
+        {
+            <!-- Error message -->
+            @if (!string.IsNullOrEmpty(erreur))
+            {
+                <div style="background:#fdecea;color:#c0392b;padding:0.8rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:0.9rem;">
+                    <i class="fas fa-exclamation-circle"></i> @erreur
+                </div>
+            }
+
+            <EditForm Model="form" OnValidSubmit="Inscrire">
+                <DataAnnotationsValidator />
+
+                <!-- Nom complet -->
+                <div style="margin-bottom:1rem;">
+                    <label style="font-size:0.85rem;color:#555;font-weight:600;display:block;margin-bottom:4px;">
+                        Nom complet
+                    </label>
+                    <InputText @bind-Value="form.NomComplet"
+                               style="width:100%;padding:0.7rem;border:1.5px solid #ddd;border-radius:8px;font-size:1rem;box-sizing:border-box;"
+                               placeholder=" Nom et prenom" />
+                </div>
+
+                <!-- Nom d'utilisateur -->
+                <div style="margin-bottom:1rem;">
+                    <label style="font-size:0.85rem;color:#555;font-weight:600;display:block;margin-bottom:4px;">
+                        Nom d'utilisateur *
+                    </label>
+                    <InputText @bind-Value="form.NomUtilisateur"
+                               style="width:100%;padding:0.7rem;border:1.5px solid #ddd;border-radius:8px;font-size:1rem;box-sizing:border-box;"
+                               placeholder="User name" />
+                    <ValidationMessage For="@(() => form.NomUtilisateur)"
+                                       style="color:#c0392b;font-size:0.8rem;" />
+                </div>
+
+                <!-- Mot de passe -->
+                <div style="margin-bottom:1rem;">
+                    <label style="font-size:0.85rem;color:#555;font-weight:600;display:block;margin-bottom:4px;">
+                        Mot de passe *
+                    </label>
+                    <input type="password" @bind="form.MotDePasse"
+                           style="width:100%;padding:0.7rem;border:1.5px solid #ddd;border-radius:8px;font-size:1rem;box-sizing:border-box;"
+                           placeholder="Minimum 4 caractères" />
+                    <ValidationMessage For="@(() => form.MotDePasse)"
+                                       style="color:#c0392b;font-size:0.8rem;" />
+                </div>
+
+                <!-- Confirmer mot de passe -->
+                <div style="margin-bottom:1rem;">
+                    <label style="font-size:0.85rem;color:#555;font-weight:600;display:block;margin-bottom:4px;">
+                        Confirmer le mot de passe *
+                    </label>
+                    <input type="password" @bind="form.ConfirmMotDePasse"
+                           style="width:100%;padding:0.7rem;border:1.5px solid #ddd;border-radius:8px;font-size:1rem;box-sizing:border-box;"
+                           placeholder="Répéter le mot de passe" />
+                    <ValidationMessage For="@(() => form.ConfirmMotDePasse)"
+                                       style="color:#c0392b;font-size:0.8rem;" />
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" disabled="@chargement"
+                        style="width:100%;padding:0.85rem;background:linear-gradient(135deg,#27ae60,#1e8449);color:white;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;margin-bottom:1rem;">
+                    @if (chargement)
+                    { <span><i class="fas fa-spinner fa-spin"></i> Création du compte...</span> }
+                    else
+                    { <span><i class="fas fa-user-plus"></i> Créer mon compte</span> }
+                </button>
+            </EditForm>
+        }
+
+        <!-- Link to Login -->
+        <p style="text-align:center;font-size:0.85rem;color:#666;margin:0;">
+            Déjà inscrit ?
+            <a href="/login" style="color:#2980b9;font-weight:600;text-decoration:none;">
+                Se connecter
+            </a>
+        </p>
+    </div>
+</div>
+
+@code {
+    private RegisterModel form = new();
+    private string erreur = "";
+    private bool chargement = false;
+    private bool succes = false;
+
+    private class RegisterModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Le nom d'utilisateur est obligatoire")]
+        [System.ComponentModel.DataAnnotations.MaxLength(50, ErrorMessage = "Maximum 50 caractères")]
+        public string NomUtilisateur { get; set; } = "";
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Le mot de passe est obligatoire")]
+        [System.ComponentModel.DataAnnotations.MinLength(4, ErrorMessage = "Minimum 4 caractères")]
+        public string MotDePasse { get; set; } = "";
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Veuillez confirmer le mot de passe")]
+        public string ConfirmMotDePasse { get; set; } = "";
+
+        public string? NomComplet { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        if (Session.EstConnecte)
+        {
+            Nav.NavigateTo("/");
+            return;
+        }
+    }
+
+    private async Task Inscrire()
+    {
+        erreur    = "";
+        chargement = true;
+
+        // Check 
+        if (form.MotDePasse != form.ConfirmMotDePasse)
+        {
+            erreur     = "Les mots de passe ne correspondent pas.";
+            chargement = false;
+            return;
+        }
+
+    
+        var ok = await AuthService.CreerUtilisateurAsync(
+            nomUtilisateur: form.NomUtilisateur,
+            motDePasse:     form.MotDePasse,
+            role:           "Utilisateur",
+            nomComplet:     string.IsNullOrWhiteSpace(form.NomComplet) ? null : form.NomComplet
+        );
+
+        if (ok)
+        {
+            succes = true;
+        }
+        else
+        {
+            erreur = "Ce nom d'utilisateur est déjà pris. Veuillez en choisir un autre.";
+        }
+
+        chargement = false;
+    }
+}

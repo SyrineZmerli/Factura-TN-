@@ -1,52 +1,125 @@
 @inherits LayoutComponentBase
-@using Microsoft.AspNetCore.Components.Routing
-@using Microsoft.AspNetCore.Components.Web
+@inject SessionUtilisateur Session
+@inject NavigationManager Nav
+@implements IDisposable
 
-<div class="page">
-    <div class="sidebar">
-        <div class="sidebar-brand">
-            <i class="fas fa-file-invoice-dollar"></i>
-            <span>FacturaPro TN</span>
-        </div>
-        <nav class="sidebar-nav">
-            <NavLink class="nav-item" href="" Match="NavLinkMatch.All">
-                <i class="fas fa-tachometer-alt"></i> Tableau de bord
-            </NavLink>
-            <div class="nav-section">GESTION</div>
-            <NavLink class="nav-item" href="clients">
-                <i class="fas fa-users"></i> Clients
-            </NavLink>
-            <NavLink class="nav-item" href="produits">
-                <i class="fas fa-box"></i> Produits
-            </NavLink>
-            <NavLink class="nav-item" href="factures">
-                <i class="fas fa-file-invoice"></i> Factures
-            </NavLink>
-            <div class="nav-section">RAPPORTS</div>
-            <NavLink class="nav-item" href="dashboard-fiscal">
-                <i class="fas fa-chart-pie"></i> Dashboard Fiscal
-            </NavLink>
-            <NavLink class="nav-item" href="dashboard-ventes">
-                <i class="fas fa-chart-bar"></i> Dashboard Ventes
-            </NavLink>
-            <div class="nav-section">CONFIGURATION</div>
-            <NavLink class="nav-item" href="parametres">
-                <i class="fas fa-cog"></i> Paramètres
-            </NavLink>
-        </nav>
-    </div>
+@* Outer AuthorizeView — Context renamed to "auth" to avoid conflict with nested AuthorizeViews *@
+<AuthorizeView Context="auth">
+    <Authorized>
+        <div class="page">
+            <div class="sidebar">
+                <div class="sidebar-brand">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span>FacturaPro TN</span>
+                </div>
+                <nav class="sidebar-nav">
 
-    <div class="main-content">
-        <div class="top-bar">
-            <div class="top-bar-title"></div>
-            <div class="top-bar-right">
-                <span class="badge bg-success">
-                    <i class="fas fa-circle"></i> En ligne
-                </span>
+                    @* Inner AuthorizeView — Context renamed to "adminAuth" to avoid conflict *@
+                    <AuthorizeView Roles="Admin" Context="adminAuth">
+                        <Authorized>
+                            <NavLink class="nav-item" href="" Match="NavLinkMatch.All">
+                                <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                            </NavLink>
+                            <div class="nav-section">GESTION</div>
+                            <NavLink class="nav-item" href="clients">
+                                <i class="fas fa-users"></i> Clients
+                            </NavLink>
+                            <NavLink class="nav-item" href="produits">
+                                <i class="fas fa-box"></i> Produits
+                            </NavLink>
+                        </Authorized>
+                        <NotAuthorized>
+                            <NavLink class="nav-item" href="" Match="NavLinkMatch.All">
+                                <i class="fas fa-home"></i> Mon Espace
+                            </NavLink>
+                            <div class="nav-section">MON COMPTE</div>
+                        </NotAuthorized>
+                    </AuthorizeView>
+
+                    <NavLink class="nav-item" href="factures">
+                        <i class="fas fa-file-invoice"></i>
+                        @(auth.User.IsInRole("Admin") ? "Factures" : "Mes Factures")
+                    </NavLink>
+
+                    @* Catalogue visible uniquement pour les utilisateurs non-admin *@
+                    <AuthorizeView Roles="Admin" Context="catalogueNav">
+                        <NotAuthorized>
+                            <NavLink class="nav-item" href="catalogue">
+                                <i class="fas fa-box-open"></i> Catalogue
+                            </NavLink>
+                        </NotAuthorized>
+                    </AuthorizeView>
+
+                    @* Inner AuthorizeView for admin-only nav links — Context renamed *@
+                    <AuthorizeView Roles="Admin" Context="adminNav">
+                        <Authorized>
+                            <div class="nav-section">RAPPORTS</div>
+                            <NavLink class="nav-item" href="dashboard-fiscal">
+                                <i class="fas fa-chart-pie"></i> Dashboard Fiscal
+                            </NavLink>
+                            <NavLink class="nav-item" href="dashboard-ventes">
+                                <i class="fas fa-chart-bar"></i> Dashboard Ventes
+                            </NavLink>
+                            <div class="nav-section">CONFIGURATION</div>
+                            <NavLink class="nav-item" href="parametres">
+                                <i class="fas fa-cog"></i> Paramètres
+                            </NavLink>
+                            <NavLink class="nav-item" href="utilisateurs">
+                                <i class="fas fa-users-cog"></i> Utilisateurs
+                            </NavLink>
+                        </Authorized>
+                    </AuthorizeView>
+
+                </nav>
+            </div>
+
+            <div class="main-content">
+                <div class="top-bar">
+                    <div class="top-bar-title"></div>
+                    <div class="top-bar-right d-flex align-items-center gap-3">
+                        <span class="badge bg-success">
+                            <i class="fas fa-circle" style="font-size:0.5rem"></i> En ligne
+                        </span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge @(auth.User.IsInRole("Admin") ? "bg-danger" : "bg-secondary")">
+                                <i class="fas fa-user"></i>
+                                @(auth.User.FindFirst("NomComplet")?.Value
+                                  ?? auth.User.Identity?.Name)
+                                (@(auth.User.IsInRole("Admin") ? "Admin" : "Utilisateur"))
+                            </span>
+                            <button class="btn btn-sm btn-outline-secondary" @onclick="Deconnecter">
+                                <i class="fas fa-sign-out-alt"></i> Déconnexion
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-body">
+                    @Body
+                </div>
             </div>
         </div>
-        <div class="content-body">
-            @Body
-        </div>
-    </div>
-</div>
+    </Authorized>
+
+    <NotAuthorized>
+        @Body
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    protected override void OnInitialized()
+    {
+        Session.OnChange += OnSessionChanged;
+    }
+
+    private void OnSessionChanged()
+        => InvokeAsync(StateHasChanged);
+
+    private void Deconnecter()
+    {
+        Session.Deconnecter();
+        Nav.NavigateTo("/login", forceLoad: false);
+    }
+
+    public void Dispose()
+        => Session.OnChange -= OnSessionChanged;
+}

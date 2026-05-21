@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FacturaPro.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3807b97d72e7ca58b1557170a8e22f2fe409fab8")]
 [assembly: System.Reflection.AssemblyProductAttribute("FacturaPro.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FacturaPro.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,0 +1,85 @@
+@*
+    TP8 — Reusable Produit Table Component
+    Displays a list of products. Parent passes data; events go back up via EventCallback.
+
+    Usage:
+    <ProduitTable Produits="produits"
+                  OnEditClicked="EditProduit"
+                  OnDeleteClicked="DeleteProduit" />
+*@
+
+@using FacturaPro.Domain.Entities
+@using FacturaPro.Domain.Enums
+
+<table class="table table-hover mb-0">
+    <thead class="table-dark">
+        <tr>
+            <th>Référence</th>
+            <th>Désignation</th>
+            <th class="text-end">Prix HT (TND)</th>
+            <th class="text-center">Taux TVA</th>
+            <th class="text-end">Prix TTC (TND)</th>
+            <th class="text-center">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Produits == null || !Produits.Any())
+        {
+            <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                    <i class="bi bi-box-seam fs-2 d-block mb-2"></i>
+                    Aucun produit trouvé
+                </td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var p in Produits)
+            {
+                <tr>
+                    <td><code>@(p.Reference ?? "")</code></td>
+                    <td class="fw-bold">@p.Designation</td>
+                    <td class="text-end">@p.PrixUnitaireHT.ToString("N3")</td>
+                    <td class="text-center">
+                        <span class="badge @GetTVABadgeClass((int)p.TauxTVA)">@((int)p.TauxTVA)%</span>
+                    </td>
+                    <td class="text-end fw-bold text-primary">
+                        @((p.PrixUnitaireHT * (1 + (decimal)p.TauxTVA / 100)).ToString("N3"))
+                    </td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary me-1"
+                                @onclick="() => TriggerEdit(p.Id)"
+                                title="Modifier">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        @* TP8: EventCallback — child fires, parent acts *@
+                        <button class="btn btn-sm btn-outline-danger"
+                                @onclick="() => TriggerDelete(p.Id)"
+                                title="Supprimer">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter] public List<Produit> Produits { get; set; } = new();
+
+    [Parameter] public EventCallback<int> OnEditClicked   { get; set; }
+    [Parameter] public EventCallback<int> OnDeleteClicked { get; set; }
+
+    private async Task TriggerEdit(int id)   => await OnEditClicked.InvokeAsync(id);
+    private async Task TriggerDelete(int id) => await OnDeleteClicked.InvokeAsync(id);
+
+    private string GetTVABadgeClass(int taux) => taux switch
+    {
+        0  => "bg-secondary",
+        7  => "bg-info",
+        13 => "bg-warning text-dark",
+        19 => "bg-danger",
+        _  => "bg-primary"
+    };
+}

@@ -1,0 +1,71 @@
+@*
+    TP8 — Reusable Client Table Component
+    Displays a list of clients. The parent passes data in; events go back up via EventCallback.
+
+    Usage:
+    <ClientTable Clients="clients"
+                 OnEditClicked="EditClient"
+                 OnDeleteClicked="DeleteClient" />
+*@
+
+@using FacturaPro.Domain.Entities
+
+<table class="table table-hover mb-0">
+    <thead class="table-dark">
+        <tr>
+            <th>Nom</th>
+            <th>Matricule Fiscal</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th class="text-center">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Clients == null || !Clients.Any())
+        {
+            <tr>
+                <td colspan="5" class="text-center text-muted py-4">
+                    <i class="bi bi-people fs-2 d-block mb-2"></i>
+                    Aucun client trouvé
+                </td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var client in Clients)
+            {
+                <tr>
+                    <td class="fw-bold">@client.Nom</td>
+                    <td>@(client.MatriculeFiscale ?? "")</td>
+                    <td>@(client.Email ?? "")</td>
+                    <td>@(client.Telephone ?? "")</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary me-1"
+                                @onclick="() => TriggerEdit(client.Id)"
+                                title="Modifier">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        @* TP8: EventCallback — child notifies parent to delete *@
+                        <button class="btn btn-sm btn-outline-danger"
+                                @onclick="() => TriggerDelete(client.Id)"
+                                title="Supprimer">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@code {
+    // TP8 [Parameter]: Parent → Child data
+    [Parameter] public List<Client> Clients { get; set; } = new();
+
+    // TP8 EventCallback: Child → Parent events
+    [Parameter] public EventCallback<int> OnEditClicked   { get; set; }
+    [Parameter] public EventCallback<int> OnDeleteClicked { get; set; }
+
+    private async Task TriggerEdit(int id)   => await OnEditClicked.InvokeAsync(id);
+    private async Task TriggerDelete(int id) => await OnDeleteClicked.InvokeAsync(id);
+}

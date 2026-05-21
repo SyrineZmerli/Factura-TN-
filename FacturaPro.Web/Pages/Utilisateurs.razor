@@ -1,0 +1,310 @@
+@page "/utilisateurs"
+@inject IAuthService AuthService
+@inject SessionUtilisateur Session
+@inject NavigationManager Nav
+
+<PageTitle>Utilisateurs FacturaPro TN</PageTitle>
+
+@if (!Session.EstAdmin)
+{
+    <div class="card mt-4">
+        <div class="card-body text-center text-danger py-5">
+            <i class="fas fa-lock fa-3x mb-3"></i>
+            <h4>Accès refusé</h4>
+            <p>Seuls les administrateurs peuvent gérer les utilisateurs.</p>
+        </div>
+    </div>
+    return;
+}
+
+<div class="page-header">
+    <h1><i class="fas fa-users-cog"></i> Gestion des Utilisateurs</h1>
+    <button class="btn btn-primary" @onclick="OuvrirModal">
+        <i class="bi bi-person-plus"></i> Nouvel Utilisateur
+    </button>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <KpiCard Title="Total Utilisateurs"
+                 Value="@totalUtilisateurs"
+                 BackgroundColorClass="bg-primary"
+                 IconClass="bi-people" />
+    </div>
+    <div class="col-md-4 mb-3">
+        <KpiCard Title="Administrateurs"
+                 Value="@totalAdmins"
+                 BackgroundColorClass="bg-danger"
+                 IconClass="bi-shield-lock" />
+    </div>
+    <div class="col-md-4 mb-3">
+        <KpiCard Title="Comptes Clients"
+                 Value="@totalClients"
+                 BackgroundColorClass="bg-success"
+                 IconClass="bi-person-check" />
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert @(isError ? "alert-danger" : "alert-success") alert-dismissible">
+        @message
+        <button type="button" class="btn-close" @onclick='() => message = ""'></button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nom d'utilisateur</th>
+                    <th>Nom complet</th>
+                    <th class="text-center">Rôle</th>
+                    <th>Client lié</th>
+                    <th>Date création</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!utilisateurs.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            <i class="bi bi-people fs-2 d-block mb-2"></i>
+                            Aucun utilisateur trouvé
+                        </td>
+                    </tr>
+                }
+                @foreach (var u in utilisateurs)
+                {
+                    <tr>
+                        <td class="fw-bold">
+                            <i class="bi bi-person-circle me-1 text-secondary"></i>
+                            @u.NomUtilisateur
+                        </td>
+                        <td>@(u.NomComplet ?? "")</td>
+                        <td class="text-center">
+                            @if (u.Role == "Admin")
+                            { <span class="badge bg-danger"><i class="bi bi-shield-lock"></i> Admin</span> }
+                            else
+                            { <span class="badge bg-primary"><i class="bi bi-person"></i> Client</span> }
+                        </td>
+                        <td>
+                            @if (u.Client != null)
+                            {
+                                <span class="badge bg-success">
+                                    <i class="bi bi-person-check"></i> @u.Client.Nom
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">—</span>
+                            }
+                        </td>
+                        <td>@u.DateCreation.ToString("dd/MM/yyyy")</td>
+                        <td class="text-center">
+                            @if (u.Id != Session.Utilisateur?.Id)
+                            {
+                                <button class="btn btn-sm btn-outline-danger"
+                                        @onclick="() => Supprimer(u.Id)"
+                                        title="Supprimer">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Vous</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (showModal)
+{
+    <div class="modal-overlay">
+        <div class="modal-dialog-custom">
+            <div class="modal-header-custom">
+                <h5><i class="bi bi-person-plus"></i> Nouvel Utilisateur</h5>
+                <button class="btn-close-custom" @onclick="FermerModal">✕</button>
+            </div>
+            <div class="modal-body-custom">
+                <EditForm Model="form" OnValidSubmit="CreerUtilisateur">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="text-danger small" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Rôle *</label>
+                        <InputSelect class="form-select" @bind-Value="form.Role">
+                            <option value="Utilisateur">Client (accès limité)</option>
+                            <option value="Admin">Administrateur (accès complet)</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nom d'utilisateur *</label>
+                        <InputText class="form-control" @bind-Value="form.NomUtilisateur"
+                                   placeholder="ex: syrine.ben" />
+                        <ValidationMessage For="@(() => form.NomUtilisateur)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nom complet</label>
+                        <InputText class="form-control" @bind-Value="form.NomComplet"
+                                   placeholder="ex: Syrine Ben Ali" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Mot de passe *</label>
+                        <input type="password" class="form-control" @bind="form.MotDePasse" />
+                        <ValidationMessage For="@(() => form.MotDePasse)" />
+                    </div>
+
+                    @if (form.Role == "Utilisateur")
+                    {
+                        <hr />
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-info-circle"></i>
+                            Ces informations seront utilisées pour créer automatiquement la fiche client liée.
+                        </p>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email</label>
+                                <InputText class="form-control" @bind-Value="form.Email"
+                                           placeholder="ex: syrine@email.com" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Téléphone</label>
+                                <InputText class="form-control" @bind-Value="form.Telephone"
+                                           placeholder="ex: +216 XX XXX XXX" />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Adresse</label>
+                            <InputTextArea class="form-control" @bind-Value="form.Adresse"
+                                           rows="2" placeholder="ex: 12 Rue de la République, Tunis" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Matricule Fiscal</label>
+                            <InputText class="form-control" @bind-Value="form.MatriculeFiscale"
+                                       placeholder="ex: 0000000/A/M/000" />
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(erreurModal))
+                    {
+                        <div class="alert alert-danger py-2 small">
+                            <i class="bi bi-exclamation-triangle"></i> @erreurModal
+                        </div>
+                    }
+
+                    <div class="modal-footer-custom">
+                        <button type="button" class="btn btn-secondary" @onclick="FermerModal">
+                            Annuler
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-floppy"></i> Créer
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Utilisateur> utilisateurs = new();
+    private bool showModal = false;
+    private string message = "";
+    private string erreurModal = "";
+    private bool isError = false;
+
+    private string totalUtilisateurs => utilisateurs.Count.ToString();
+    private string totalAdmins       => utilisateurs.Count(u => u.Role == "Admin").ToString();
+    private string totalClients      => utilisateurs.Count(u => u.Role != "Admin").ToString();
+
+    private NouvelUtilisateurModel form = new();
+
+    private class NouvelUtilisateurModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Le nom d'utilisateur est obligatoire")]
+        [System.ComponentModel.DataAnnotations.MaxLength(50)]
+        public string NomUtilisateur { get; set; } = "";
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Le mot de passe est obligatoire")]
+        [System.ComponentModel.DataAnnotations.MinLength(4, ErrorMessage = "Minimum 4 caractères")]
+        public string MotDePasse { get; set; } = "";
+
+        public string Role { get; set; } = "Utilisateur";
+        public string? NomComplet { get; set; }
+        public string? Email { get; set; }
+        public string? Telephone { get; set; }
+        public string? Adresse { get; set; }
+        public string? MatriculeFiscale { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Session.EstConnecte) { Nav.NavigateTo("/login"); return; }
+        await Charger();
+    }
+
+    private async Task Charger()
+        => utilisateurs = await AuthService.GetTousUtilisateursAsync();
+
+    private void OuvrirModal()
+    {
+        form        = new NouvelUtilisateurModel();
+        erreurModal = "";
+        showModal   = true;
+    }
+
+    private async Task CreerUtilisateur()
+    {
+        erreurModal = "";
+        var ok = await AuthService.CreerUtilisateurAsync(
+            form.NomUtilisateur,
+            form.MotDePasse,
+            form.Role,
+            form.NomComplet,
+            email:            form.Email,
+            telephone:        form.Telephone,
+            adresse:          form.Adresse,
+            matriculeFiscale: form.MatriculeFiscale);
+
+        if (ok)
+        {
+            var typeCompte = form.Role == "Utilisateur" ? "Client" : "Administrateur";
+            message = $"Utilisateur '{form.NomUtilisateur}' créé avec succès ({typeCompte}).";
+            isError = false;
+            FermerModal();
+            await Charger();
+        }
+        else
+        {
+            erreurModal = "Ce nom d'utilisateur existe déjà.";
+        }
+    }
+
+    private async Task Supprimer(int id)
+    {
+        await AuthService.SupprimerUtilisateurAsync(id);
+        message = "Utilisateur supprimé.";
+        isError = false;
+        await Charger();
+    }
+
+    private void FermerModal()
+    {
+        showModal   = false;
+        erreurModal = "";
+        form        = new NouvelUtilisateurModel();
+    }
+}

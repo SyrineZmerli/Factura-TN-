@@ -1,0 +1,126 @@
+@*
+    TP8 — Data Component with EventCallback (Child → Parent communication)
+    Displays the list of invoices. Receives data from the parent via [Parameter].
+
+    The Delete button does NOT call the service directly.
+    Instead it fires OnDeleteClicked (EventCallback) so the PARENT does the work.
+    The Edit/View button also fires OnEditClicked.
+
+    Usage in MyDashboard / Factures.razor:
+    <FactureTable Factures="factures"
+                  ShowClientColumn="true"
+                  OnEditClicked="ViewFacture"
+                  OnValiderClicked="ValiderFacture"
+                  OnDeleteClicked="SupprimerFacture" />
+*@
+
+@using FacturaPro.Domain.Entities
+
+<table class="table table-hover mb-0">
+    <thead class="table-dark">
+        <tr>
+            <th>N° Facture</th>
+            <th>Date</th>
+            @if (ShowClientColumn)
+            {
+                <th>Client</th>
+            }
+            <th class="text-end">Total HT</th>
+            <th class="text-end">TVA</th>
+            <th class="text-end">Total TTC</th>
+            <th class="text-center">Statut</th>
+            <th class="text-center">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Factures == null || !Factures.Any())
+        {
+            <tr>
+                <td colspan="@(ShowClientColumn ? 8 : 7)" class="text-center text-muted py-4">
+                    <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                    Aucune facture trouvée
+                </td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var f in Factures)
+            {
+                <tr>
+                    <td><code class="fw-bold">@f.Numero</code></td>
+                    <td>@f.DateFacture.ToString("dd/MM/yyyy")</td>
+                    @if (ShowClientColumn)
+                    {
+                        <td>@(f.Client?.Nom ?? "")</td>
+                    }
+                    <td class="text-end">@f.TotalHT.ToString("N3")</td>
+                    <td class="text-end text-warning">@f.TotalTVA.ToString("N3")</td>
+                    <td class="text-end fw-bold text-primary">@f.TotalTTC.ToString("N3")</td>
+                    <td class="text-center">
+                        <span class="badge @GetStatutClass(f.Statut)">@f.Statut</span>
+                    </td>
+                    <td class="text-center">
+                        @* View button — always visible *@
+                        <button class="btn btn-sm btn-outline-info me-1"
+                                @onclick="() => TriggerEdit(f.Id)"
+                                title="Voir">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        @* Admin-only actions — only shown when AllowAdminActions = true *@
+                        @if (AllowAdminActions && f.Statut == StatutFacture.Brouillon)
+                        {
+                            <button class="btn btn-sm btn-outline-success me-1"
+                                    @onclick="() => TriggerValider(f.Id)"
+                                    title="Valider">
+                                <i class="bi bi-check-lg"></i>
+                            </button>
+                            @* TP8: Child fires EventCallback — Parent handles the deletion *@
+                            <button class="btn btn-sm btn-outline-danger"
+                                    @onclick="() => TriggerDelete(f.Id)"
+                                    title="Supprimer">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+    @if (Factures != null && Factures.Any())
+    {
+        <tfoot class="table-light fw-bold">
+            <tr>
+                <td colspan="@(ShowClientColumn ? 3 : 2)">TOTAL</td>
+                <td class="text-end">@Factures.Sum(f => f.TotalHT).ToString("N3") TND</td>
+                <td class="text-end text-warning">@Factures.Sum(f => f.TotalTVA).ToString("N3") TND</td>
+                <td class="text-end text-primary">@Factures.Sum(f => f.TotalTTC).ToString("N3") TND</td>
+                <td colspan="2"></td>
+            </tr>
+        </tfoot>
+    }
+</table>
+
+@code {
+    // TP8: Parent → Child: the parent passes a list of factures as a parameter
+    [Parameter] public List<Facture> Factures          { get; set; } = new();
+    [Parameter] public bool          ShowClientColumn   { get; set; } = false;
+    [Parameter] public bool          AllowAdminActions  { get; set; } = false;
+
+    // TP8: Child → Parent communication via EventCallback.
+    // The child "notifies" the parent; the parent does the actual work.
+    [Parameter] public EventCallback<int> OnEditClicked    { get; set; }
+    [Parameter] public EventCallback<int> OnValiderClicked { get; set; }
+    [Parameter] public EventCallback<int> OnDeleteClicked  { get; set; }
+
+    // These private methods are called by button @onclick, they invoke the callbacks
+    private async Task TriggerEdit(int id)    => await OnEditClicked.InvokeAsync(id);
+    private async Task TriggerValider(int id) => await OnValiderClicked.InvokeAsync(id);
+    private async Task TriggerDelete(int id)  => await OnDeleteClicked.InvokeAsync(id);
+
+    private string GetStatutClass(StatutFacture s) => s switch
+    {
+        StatutFacture.Validee => "bg-success",
+        StatutFacture.Annulee => "bg-danger",
+        _                     => "bg-warning text-dark"
+    };
+}

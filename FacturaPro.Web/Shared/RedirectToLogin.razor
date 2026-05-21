@@ -1,0 +1,14 @@
+@* 
+    TP9: RedirectToLogin — used by <NotAuthorized> in Routes.razor.
+    When an unauthenticated user tries to access a protected page,
+    AuthorizeRouteView renders this component, which immediately redirects to /login.
+*@
+@inject NavigationManager Nav
+
+@code {
+    protected override void OnInitialized()
+    {
+        // NavigationManager.NavigateTo with forceLoad:false keeps the Blazor circuit alive
+        Nav.NavigateTo("/login", forceLoad: false);
+    }
+}

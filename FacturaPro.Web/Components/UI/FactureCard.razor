@@ -1,0 +1,71 @@
+@*
+    TP8 — Exercise: "SensorCard" equivalent for FacturaPro
+    Displays a single facture as a Bootstrap card (summary view).
+    The parent uses this inside a foreach loop to build a card grid.
+
+    Usage:
+    <div class="row">
+    @foreach (var f in factures)
+    {
+        <div class="col-md-4 mb-3">
+            <FactureCard Facture="f" OnViewClicked="ViewFacture" />
+        </div>
+    }
+    </div>
+*@
+
+@using FacturaPro.Domain.Entities
+
+<div class="card shadow-sm h-100">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <code class="fw-bold text-primary">@Facture.Numero</code>
+        <span class="badge @GetStatutClass(Facture.Statut)">@Facture.Statut</span>
+    </div>
+    <div class="card-body">
+        <p class="mb-1">
+            <i class="bi bi-person text-muted me-1"></i>
+            <strong>@(Facture.Client?.Nom ?? "")</strong>
+        </p>
+        <p class="mb-1">
+            <i class="bi bi-calendar text-muted me-1"></i>
+            @Facture.DateFacture.ToString("dd/MM/yyyy")
+        </p>
+        <hr class="my-2" />
+        <div class="d-flex justify-content-between">
+            <small class="text-muted">HT</small>
+            <small>@Facture.TotalHT.ToString("N3") TND</small>
+        </div>
+        <div class="d-flex justify-content-between">
+            <small class="text-warning">TVA</small>
+            <small>@Facture.TotalTVA.ToString("N3") TND</small>
+        </div>
+        <div class="d-flex justify-content-between fw-bold text-primary">
+            <span>TTC</span>
+            <span>@Facture.TotalTTC.ToString("N3") TND</span>
+        </div>
+    </div>
+    <div class="card-footer text-end">
+        @* TP8: EventCallback — child notifies parent to open the facture *@
+        <button class="btn btn-sm btn-outline-primary"
+                @onclick="() => TriggerView(Facture.Id)">
+            <i class="bi bi-eye"></i> Voir
+        </button>
+    </div>
+</div>
+
+@code {
+    /// <summary>TP8 [Parameter]: parent passes a single Facture object to this card.</summary>
+    [Parameter] public Facture Facture { get; set; } = new();
+
+    /// <summary>TP8 EventCallback: fires when user clicks "Voir", parent handles navigation.</summary>
+    [Parameter] public EventCallback<int> OnViewClicked { get; set; }
+
+    private async Task TriggerView(int id) => await OnViewClicked.InvokeAsync(id);
+
+    private string GetStatutClass(StatutFacture s) => s switch
+    {
+        StatutFacture.Validee => "bg-success",
+        StatutFacture.Annulee => "bg-danger",
+        _                     => "bg-warning text-dark"
+    };
+}

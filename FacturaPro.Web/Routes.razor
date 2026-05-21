@@ -1,14 +1,45 @@
+@* 
+    TP9: <CascadingAuthenticationState> wraps the entire router.
+    It cascades the AuthenticationState value down to every component in the tree,
+    so <AuthorizeView> and [Authorize] pages can access it without manual injection.
+    This replaces the need to inject AuthenticationStateProvider in every page.
+*@
 @using FacturaPro.Web.Shared
 
-<Router AppAssembly="@typeof(App).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-    </Found>
-    <NotFound>
-        <PageTitle>Page introuvable</PageTitle>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p>Page introuvable.</p>
-        </LayoutView>
-    </NotFound>
-</Router>
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                @* 
+                    TP9: <NotAuthorized> is shown when a page has [Authorize] 
+                    but the user is not logged in or lacks the required role.
+                    This replaces manual redirects in OnInitialized().
+                *@
+                <NotAuthorized>
+                    @{
+                        // Redirect to login — NavigationManager not available here so we use JS-style meta redirect
+                        // The actual redirect is handled by RedirectToLogin component
+                    }
+                    <RedirectToLogin />
+                </NotAuthorized>
+                <Authorizing>
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary"></div>
+                        <p class="mt-2 text-muted">Vérification des droits d'accès...</p>
+                    </div>
+                </Authorizing>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Page introuvable</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <div class="text-center py-5">
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <h4>Page introuvable</h4>
+                    <a href="/" class="btn btn-primary mt-2">Retour à l'accueil</a>
+                </div>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

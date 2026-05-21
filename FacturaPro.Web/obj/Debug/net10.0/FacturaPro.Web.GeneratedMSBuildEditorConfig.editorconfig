@@ -34,6 +34,30 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/projet .net/FacturaPro/FacturaPro.Web/Components/UI/ClientTable.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xVSVxDbGllbnRUYWJsZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/projet .net/FacturaPro/FacturaPro.Web/Components/UI/FactureCard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xVSVxGYWN0dXJlQ2FyZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/projet .net/FacturaPro/FacturaPro.Web/Components/UI/FactureTable.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xVSVxGYWN0dXJlVGFibGUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/projet .net/FacturaPro/FacturaPro.Web/Components/UI/KpiCard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xVSVxLcGlDYXJkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/projet .net/FacturaPro/FacturaPro.Web/Components/UI/ProduitTable.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xVSVxQcm9kdWl0VGFibGUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/projet .net/FacturaPro/FacturaPro.Web/Pages/Catalogue.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2F0YWxvZ3VlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/projet .net/FacturaPro/FacturaPro.Web/Pages/Clients.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2xpZW50cy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
@@ -54,6 +78,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXgucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/projet .net/FacturaPro/FacturaPro.Web/Pages/Login.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9naW4ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/projet .net/FacturaPro/FacturaPro.Web/Pages/Parametres.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGFyYW1ldHJlcy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
@@ -62,12 +90,28 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJvZHVpdHMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/projet .net/FacturaPro/FacturaPro.Web/Pages/Register.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVnaXN0ZXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/projet .net/FacturaPro/FacturaPro.Web/Pages/Utilisateurs.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVXRpbGlzYXRldXJzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/projet .net/FacturaPro/FacturaPro.Web/Routes.razor]
 build_metadata.AdditionalFiles.TargetPath = Um91dGVzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/projet .net/FacturaPro/FacturaPro.Web/Shared/EmptyLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEVtcHR5TGF5b3V0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/projet .net/FacturaPro/FacturaPro.Web/Shared/MainLayout.razor]
 build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE1haW5MYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/projet .net/FacturaPro/FacturaPro.Web/Shared/RedirectToLogin.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXFJlZGlyZWN0VG9Mb2dpbi5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/projet .net/FacturaPro/FacturaPro.Web/_Imports.razor]

@@ -1,74 +1,108 @@
 @page "/parametres"
 @inject IFactureService FactureService
+@inject FacturaPro.Infrastructure.Data.AppDbContext DbContext
 
-<PageTitle>Paramètres — FacturaPro TN</PageTitle>
+<PageTitle>Paramètres FacturaPro TN</PageTitle>
 
 <div class="page-header">
     <h1><i class="fas fa-cog"></i> Paramètres de l'Application</h1>
 </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header"><h5>Configuration Fiscale</h5></div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Montant du Timbre Fiscal (TND)</label>
-                    <input type="number" class="form-control" @bind="timbreFiscal" step="0.001" min="0" />
-                    <div class="form-text">Valeur appliquée par défaut sur chaque facture.</div>
+@if (isLoading)
+{
+    <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header"><h5>Configuration Fiscale</h5></div>
+                <div class="card-body">
+                    @*
+                        TP7: EditForm with DataAnnotationsValidator for parameter forms.
+                        OnValidSubmit ensures values are valid before saving to SQLite.
+                    *@
+                    <EditForm Model="this" OnValidSubmit="SaveParams">
+                        <DataAnnotationsValidator />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Montant du Timbre Fiscal (TND)</label>
+                            <input type="number" class="form-control" @bind="timbreFiscal" step="0.001" min="0" />
+                            <div class="form-text">Valeur appliquée par défaut sur chaque facture.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Taux TVA par défaut</label>
+                            <select class="form-select" @bind="tauxDefaut">
+                                <option value="0">0% — Exonéré</option>
+                                <option value="7">7%</option>
+                                <option value="13">13%</option>
+                                <option value="19">19%</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-floppy"></i> Enregistrer
+                        </button>
+                        @if (saved)
+                        {
+                            <span class="text-success ms-3"><i class="bi bi-check-lg"></i> Sauvegardé !</span>
+                        }
+                    </EditForm>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Taux TVA par défaut</label>
-                    <select class="form-select" @bind="tauxDefaut">
-                        <option value="0">0% — Exonéré</option>
-                        <option value="7">7%</option>
-                        <option value="13">13%</option>
-                        <option value="19">19%</option>
-                    </select>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header"><h5>Informations Société</h5></div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Raison Sociale</label>
+                        <input type="text" class="form-control" @bind="raisonSociale" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Matricule Fiscal</label>
+                        <input type="text" class="form-control" @bind="matriculeFiscale" placeholder="0000000/A/M/000" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Adresse</label>
+                        <textarea class="form-control" @bind="adresse" rows="2"></textarea>
+                    </div>
+                    <button class="btn btn-primary" @onclick="SaveParams">
+                        <i class="bi bi-floppy"></i> Enregistrer
+                    </button>
+                    @if (saved)
+                    {
+                        <span class="text-success ms-3"><i class="bi bi-check-lg"></i> Sauvegardé !</span>
+                    }
                 </div>
-                <button class="btn btn-primary" @onclick="SaveParams">
-                    <i class="fas fa-save"></i> Enregistrer
-                </button>
-                @if (saved)
-                {
-                    <span class="text-success ms-3"><i class="fas fa-check"></i> Sauvegardé !</span>
-                }
             </div>
         </div>
     </div>
 
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header"><h5>Informations Société</h5></div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Raison Sociale</label>
-                    <input type="text" class="form-control" @bind="raisonSociale" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Matricule Fiscal</label>
-                    <input type="text" class="form-control" @bind="matriculeFiscale" placeholder="0000000/A/M/000" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Adresse</label>
-                    <textarea class="form-control" @bind="adresse" rows="2"></textarea>
-                </div>
-                <button class="btn btn-primary" @onclick="SaveParams">
-                    <i class="fas fa-save"></i> Enregistrer
-                </button>
-            </div>
+    @* TP8: KpiCard component used in the info section too *@
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <KpiCard Title="Timbre Fiscal actuel"
+                     Value="@(timbreFiscal.ToString("N3") + " TND")"
+                     BackgroundColorClass="bg-secondary"
+                     IconClass="bi-postage-fill" />
+        </div>
+        <div class="col-md-4">
+            <KpiCard Title="Taux TVA par défaut"
+                     Value="@(tauxDefaut + "%")"
+                     BackgroundColorClass="bg-info"
+                     IconClass="bi-percent" />
+        </div>
+        <div class="col-md-4">
+            <KpiCard Title="Raison Sociale"
+                     Value="@raisonSociale"
+                     BackgroundColorClass="bg-dark"
+                     IconClass="bi-building" />
         </div>
     </div>
-</div>
 
-<div class="card mt-4">
-    <div class="card-header"><h5><i class="fas fa-info-circle"></i> À propos</h5></div>
-    <div class="card-body">
-        <p><strong>FacturaPro TN</strong> — Application de facturation conforme au modèle tunisien.</p>
-        <p class="text-muted">Version 1.0 — Développé avec Blazor Server + EF Core 8 + SQL Server</p>
-        <p class="text-muted">Taux TVA supportés : 0%, 7%, 13%, 19% conformément à la législation fiscale tunisienne.</p>
-    </div>
-</div>
+}
 
 @code {
     private decimal timbreFiscal = 1.000m;
@@ -77,13 +111,59 @@
     private string matriculeFiscale = "0000000/A/M/000";
     private string adresse = "";
     private bool saved = false;
+    private bool isLoading = true;
 
+    // TP6: OnInitializedAsync — load current parameter values from SQLite on page load
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+
+        // TP6: LINQ to read current parameter values from the Parametres table
+        var parametres = await DbContext.Parametres.ToListAsync();
+
+        var timbre = parametres.FirstOrDefault(p => p.Cle == "TimbreFiscal");
+        if (timbre != null && decimal.TryParse(timbre.Valeur, out var t))
+            timbreFiscal = t;
+
+        var rs = parametres.FirstOrDefault(p => p.Cle == "RaisonSociale");
+        if (rs != null) raisonSociale = rs.Valeur;
+
+        var mf = parametres.FirstOrDefault(p => p.Cle == "MatriculeFiscale");
+        if (mf != null) matriculeFiscale = mf.Valeur;
+
+        isLoading = false;
+    }
+
+    // TP6: SaveParams persists the changed values back to SQLite
     private async Task SaveParams()
     {
-        // In a real app, save to DB via ParametreService
+        // Update or create each parameter in the DB
+        await UpsertParam("TimbreFiscal",    timbreFiscal.ToString("N3"),  "Montant du timbre fiscal en TND");
+        await UpsertParam("RaisonSociale",   raisonSociale,                "Raison sociale de la société");
+        await UpsertParam("MatriculeFiscale",matriculeFiscale,             "Matricule fiscal de la société");
+
+        await DbContext.SaveChangesAsync();
+
         saved = true;
         await Task.Delay(2000);
         saved = false;
         StateHasChanged();
+    }
+
+    // TP6: Upsert helper — find existing row and update, or add new one
+    private async Task UpsertParam(string cle, string valeur, string description)
+    {
+        var param = await DbContext.Parametres
+            .FirstOrDefaultAsync(p => p.Cle == cle);
+
+        if (param != null)
+            param.Valeur = valeur;
+        else
+            DbContext.Parametres.Add(new FacturaPro.Domain.Entities.ParametreApp
+            {
+                Cle         = cle,
+                Valeur      = valeur,
+                Description = description
+            });
     }
 }

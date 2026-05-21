@@ -2,7 +2,7 @@
 @inject IDashboardService DashboardService
 @inject IJSRuntime JS
 
-<PageTitle>Dashboard Fiscal — FacturaPro TN</PageTitle>
+<PageTitle>Dashboard Fiscal FacturaPro TN</PageTitle>
 
 <div class="page-header">
     <h1><i class="fas fa-chart-pie"></i> Tableau de Bord Fiscal</h1>
@@ -18,45 +18,44 @@
 }
 else if (data != null)
 {
-    <div class="kpi-grid">
-        <div class="kpi-card kpi-blue">
-            <div class="kpi-icon"><i class="fas fa-percentage"></i></div>
-            <div class="kpi-content">
-                <div class="kpi-value">@data.TVATotaleCollectee.ToString("N3") TND</div>
-                <div class="kpi-label">TVA Totale Collectée</div>
-            </div>
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <KpiCard Title="TVA Totale Collectée"
+                     Value="@(data.TVATotaleCollectee.ToString("N3") + " TND")"
+                     BackgroundColorClass="bg-primary"
+                     IconClass="bi-percent" />
         </div>
-        <div class="kpi-card kpi-red">
-            <div class="kpi-icon"><i class="fas fa-stamp"></i></div>
-            <div class="kpi-content">
-                <div class="kpi-value">@data.MontantTotalTimbre.ToString("N3") TND</div>
-                <div class="kpi-label">Total Timbres Fiscaux</div>
-            </div>
+        <div class="col-md-4 mb-3">
+            <KpiCard Title="Total Timbres Fiscaux"
+                     Value="@(data.MontantTotalTimbre.ToString("N3") + " TND")"
+                     BackgroundColorClass="bg-danger"
+                     IconClass="bi-postage-fill" />
         </div>
-        <div class="kpi-card kpi-green">
-            <div class="kpi-icon"><i class="fas fa-file-invoice"></i></div>
-            <div class="kpi-content">
-                <div class="kpi-value">@data.NombreFactures</div>
-                <div class="kpi-label">Factures Émises</div>
-            </div>
+        <div class="col-md-4 mb-3">
+            <KpiCard Title="Factures Émises"
+                     Value="@data.NombreFactures.ToString()"
+                     BackgroundColorClass="bg-success"
+                     IconClass="bi-file-earmark-text" />
         </div>
     </div>
 
-    <div class="row mt-4">
-        <!-- Pie Chart TVA par taux -->
+    <div class="row mt-2">
         <div class="col-md-5 mb-4">
             <div class="card h-100">
-                <div class="card-header"><h5><i class="fas fa-chart-pie"></i> Répartition TVA par Taux</h5></div>
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-pie"></i> Répartition TVA par Taux</h5>
+                </div>
                 <div class="card-body d-flex align-items-center justify-content-center">
                     <canvas id="tvaChart" style="max-height:280px"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- Table TVA par taux -->
         <div class="col-md-7 mb-4">
             <div class="card h-100">
-                <div class="card-header"><h5><i class="fas fa-table"></i> TVA Ventilée par Taux</h5></div>
+                <div class="card-header">
+                    <h5><i class="fas fa-table"></i> TVA Ventilée par Taux</h5>
+                </div>
                 <div class="card-body">
                     <table class="table table-bordered">
                         <thead class="table-primary">
@@ -69,14 +68,18 @@ else if (data != null)
                         <tbody>
                             @foreach (var item in data.TVAParTaux)
                             {
-                                var pct = data.TVATotaleCollectee == 0 ? 0 : item.Value / data.TVATotaleCollectee * 100;
+                                var pct = data.TVATotaleCollectee == 0
+                                    ? 0m
+                                    : item.Value / data.TVATotaleCollectee * 100;
                                 <tr>
                                     <td><span class="badge bg-primary fs-6">@item.Key</span></td>
                                     <td class="text-end fw-bold">@item.Value.ToString("N3")</td>
                                     <td class="text-end">
                                         <div class="d-flex align-items-center justify-content-end gap-2">
                                             <div class="progress flex-grow-1" style="height:8px">
-                                                <div class="progress-bar" style="width:@pct%"></div>
+                                                @* FIX: use @($"...") to avoid double-quotes inside style attribute *@
+                                                <div class="progress-bar"
+                                                     style="@($"width:{pct:N0}%")"></div>
                                             </div>
                                             @pct.ToString("N1")%
                                         </div>
@@ -117,11 +120,9 @@ else if (data != null)
     private async Task RenderCharts()
     {
         if (data == null || !data.TVAParTaux.Any()) return;
-
         var labels = data.TVAParTaux.Keys.ToArray();
         var values = data.TVAParTaux.Values.Select(v => (double)v).ToArray();
         var colors = new[] { "#2980b9", "#27ae60", "#f39c12", "#e74c3c" };
-
         await JS.InvokeVoidAsync("renderPieChart", "tvaChart", labels, values, colors);
     }
 }

@@ -4,46 +4,81 @@
 @inject IClientService ClientService
 @inject IProduitService ProduitService
 @inject NavigationManager Nav
+@inject SessionUtilisateur Session
 
-<PageTitle>Factures — FacturaPro TN</PageTitle>
+<PageTitle>Factures FacturaPro TN</PageTitle>
 
 @if (Id == null)
 {
-    <!-- Liste des factures -->
     <div class="page-header">
-        <h1><i class="fas fa-file-invoice"></i> Gestion des Factures</h1>
-        <button class="btn btn-primary" @onclick="NouvelleFacture">
-            <i class="fas fa-plus"></i> Nouvelle Facture
-        </button>
+        <h1><i class="fas fa-file-invoice"></i> @(Session.EstAdmin ? "Gestion des Factures" : "Mes Factures")</h1>
+        <div class="d-flex gap-2">
+            @if (Session.EstAdmin)
+            {
+                <button class="btn btn-primary" @onclick="NouvelleFacture">
+                    <i class="bi bi-plus-lg"></i> Nouvelle Facture
+                </button>
+            }
+            <button class="btn btn-outline-secondary" @onclick="ToggleView"
+                    title='@(showAsCards ? "Vue tableau" : "Vue cartes")'>
+                <i class="@toggleIconClass"></i>
+                @(showAsCards ? "Vue tableau" : "Vue cartes")
+            </button>
+        </div>
     </div>
 
-    <div class="card mb-3">
-        <div class="card-body">
-            <div class="row g-2">
-                <div class="col-md-3">
-                    <label class="form-label small">Client</label>
-                    <select class="form-select form-select-sm" @bind="filterClientId" @bind:after="LoadAsync">
-                        <option value="">Tous les clients</option>
-                        @foreach (var c in allClients)
-                        { <option value="@c.Id">@c.Nom</option> }
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label small">Du</label>
-                    <input type="date" class="form-control form-control-sm" @bind="filterFrom" @bind:after="LoadAsync" />
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label small">Au</label>
-                    <input type="date" class="form-control form-control-sm" @bind="filterTo" @bind:after="LoadAsync" />
-                </div>
-                <div class="col-md-3 d-flex align-items-end">
-                    <button class="btn btn-sm btn-outline-secondary w-100" @onclick="ResetFilters">
-                        <i class="fas fa-undo"></i> Réinitialiser
-                    </button>
+    @if (Session.EstAdmin)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <label class="form-label small">Client</label>
+                        <select class="form-select form-select-sm" @bind="filterClientId" @bind:after="LoadAsync">
+                            <option value="">Tous les clients</option>
+                            @foreach (var c in allClients)
+                            { <option value="@c.Id">@c.Nom</option> }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small">Du</label>
+                        <input type="date" class="form-control form-control-sm" @bind="filterFrom" @bind:after="LoadAsync" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small">Au</label>
+                        <input type="date" class="form-control form-control-sm" @bind="filterTo" @bind:after="LoadAsync" />
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button class="btn btn-sm btn-outline-secondary w-100" @onclick="ResetFilters">
+                            <i class="bi bi-arrow-counterclockwise"></i> Réinitialiser
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    }
+    else
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <label class="form-label small">Du</label>
+                        <input type="date" class="form-control form-control-sm" @bind="filterFrom" @bind:after="LoadAsync" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small">Au</label>
+                        <input type="date" class="form-control form-control-sm" @bind="filterTo" @bind:after="LoadAsync" />
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button class="btn btn-sm btn-outline-secondary w-100" @onclick="ResetFilters">
+                            <i class="bi bi-arrow-counterclockwise"></i> Réinitialiser
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 
     @if (isLoading)
     {
@@ -51,238 +86,284 @@
     }
     else
     {
-        <div class="card">
-            <div class="card-body p-0">
-                <table class="table table-hover mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>N° Facture</th>
-                            <th>Date</th>
-                            <th>Client</th>
-                            <th class="text-end">Total HT</th>
-                            <th class="text-end">TVA</th>
-                            <th class="text-end">Total TTC</th>
-                            <th class="text-center">Statut</th>
-                            <th class="text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (!factures.Any())
-                        {
-                            <tr><td colspan="8" class="text-center text-muted py-4">Aucune facture trouvée</td></tr>
-                        }
-                        @foreach (var f in factures)
-                        {
-                            <tr>
-                                <td><code class="fw-bold">@f.Numero</code></td>
-                                <td>@f.DateFacture.ToString("dd/MM/yyyy")</td>
-                                <td>@f.Client?.Nom</td>
-                                <td class="text-end">@f.TotalHT.ToString("N3")</td>
-                                <td class="text-end text-warning">@f.TotalTVA.ToString("N3")</td>
-                                <td class="text-end fw-bold text-primary">@f.TotalTTC.ToString("N3")</td>
-                                <td class="text-center">
-                                    <span class="badge @GetStatutClass(f.Statut)">@f.Statut</span>
-                                </td>
-                                <td class="text-center">
-                                    <button class="btn btn-sm btn-outline-info me-1" @onclick="() => ViewFacture(f.Id)" title="Voir">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    @if (f.Statut == StatutFacture.Brouillon)
-                                    {
-                                        <button class="btn btn-sm btn-outline-success me-1" @onclick="() => ValiderFacture(f.Id)" title="Valider">
-                                            <i class="fas fa-check"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => SupprimerFacture(f.Id)" title="Supprimer">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                    <tfoot class="table-light fw-bold">
-                        <tr>
-                            <td colspan="3">TOTAL</td>
-                            <td class="text-end">@factures.Sum(f => f.TotalHT).ToString("N3") TND</td>
-                            <td class="text-end text-warning">@factures.Sum(f => f.TotalTVA).ToString("N3") TND</td>
-                            <td class="text-end text-primary">@factures.Sum(f => f.TotalTTC).ToString("N3") TND</td>
-                            <td colspan="2"></td>
-                        </tr>
-                    </tfoot>
-                </table>
+        @if (showAsCards)
+        {
+            @if (!factures.Any())
+            {
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                    Aucune facture trouvée
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    @foreach (var f in factures)
+                    {
+                        <div class="col-md-4 col-lg-3 mb-3">
+                            <FactureCard Facture="f" OnViewClicked="ViewFacture" />
+                        </div>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-body p-0">
+                    <FactureTable Factures="factures"
+                                  ShowClientColumn="Session.EstAdmin"
+                                  AllowAdminActions="Session.EstAdmin"
+                                  OnEditClicked="ViewFacture"
+                                  OnValiderClicked="ValiderFacture"
+                                  OnDeleteClicked="SupprimerFacture" />
+                </div>
             </div>
-        </div>
+        }
     }
 }
 else
 {
-    <!-- Formulaire de création/détail -->
     <div class="page-header">
-        <h1><i class="fas fa-file-invoice"></i> @(currentFacture?.Id == 0 ? "Nouvelle Facture" : $"Facture {currentFacture?.Numero}")</h1>
+        <h1><i class="fas fa-file-invoice"></i>
+            @(currentFacture?.Id == 0 ? "Nouvelle Facture" : $"Facture {currentFacture?.Numero}")
+        </h1>
         <button class="btn btn-secondary" @onclick='() => Nav.NavigateTo("/factures")'>
-            <i class="fas fa-arrow-left"></i> Retour
+            <i class="bi bi-arrow-left"></i> Retour
         </button>
     </div>
 
     @if (currentFacture != null)
     {
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">Client *</label>
-                <select class="form-select" @bind="currentFacture.ClientId">
-                    <option value="0">-- Sélectionner un client --</option>
-                    @foreach (var c in allClients)
-                    { <option value="@c.Id">@c.Nom</option> }
-                </select>
-            </div>
-            <div class="col-md-3 mb-3">
-                <label class="form-label fw-bold">Date *</label>
-                <input type="date" class="form-control" @bind="currentFacture.DateFacture" />
-            </div>
-            <div class="col-md-3 mb-3">
-                <label class="form-label fw-bold">Timbre Fiscal</label>
-                <div class="input-group">
-                    <div class="input-group-text">
-                        <input type="checkbox" @bind="currentFacture.TimbreFiscalApplique" />
-                    </div>
-                    <input type="number" class="form-control" @bind="currentFacture.MontantTimbre"
-                           disabled="@(!currentFacture.TimbreFiscalApplique)" step="0.001" />
-                    <span class="input-group-text">TND</span>
+        @if (Session.EstAdmin)
+        {
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Client *</label>
+                    <select class="form-select" @bind="currentFacture.ClientId">
+                        <option value="0">-- Sélectionner un client --</option>
+                        @foreach (var c in allClients)
+                        { <option value="@c.Id">@c.Nom</option> }
+                    </select>
                 </div>
-            </div>
-        </div>
-
-        <!-- Lignes de facture -->
-        <div class="card mb-3">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="mb-0">Lignes de Facture</h6>
-                <button class="btn btn-sm btn-success" @onclick="AjouterLigne">
-                    <i class="fas fa-plus"></i> Ajouter une ligne
-                </button>
-            </div>
-            <div class="card-body p-0">
-                <table class="table mb-0">
-                    <thead class="table-secondary">
-                        <tr>
-                            <th>Produit</th>
-                            <th class="text-center" style="width:100px">Qté</th>
-                            <th class="text-end" style="width:130px">Prix HT</th>
-                            <th class="text-center" style="width:80px">TVA %</th>
-                            <th class="text-end" style="width:130px">Montant HT</th>
-                            <th class="text-end" style="width:130px">Montant TTC</th>
-                            <th style="width:50px"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var ligne in currentFacture.Lignes)
-                        {
-                            <tr>
-                                <td>
-                                    <select class="form-select form-select-sm" @bind="ligne.ProduitId"
-                                            @bind:after="() => OnProduitChange(ligne)">
-                                        <option value="0">-- Produit --</option>
-                                        @foreach (var p in allProduits)
-                                        { <option value="@p.Id">@p.Designation</option> }
-                                    </select>
-                                </td>
-                                <td>
-                                    <input type="number" class="form-control form-control-sm text-center"
-                                           @bind="ligne.Quantite" min="1" />
-                                </td>
-                                <td>
-                                    <input type="number" class="form-control form-control-sm text-end"
-                                           @bind="ligne.PrixUnitaireHT" step="0.001" />
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-primary">@ligne.TauxTVAApplique%</span>
-                                </td>
-                                <td class="text-end">@ligne.MontantHT.ToString("N3")</td>
-                                <td class="text-end fw-bold">@ligne.MontantTTC.ToString("N3")</td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-danger"
-                                            @onclick="() => SupprimerLigne(ligne)">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Totaux -->
-        <div class="row justify-content-end">
-            <div class="col-md-4">
-                <div class="totals-card">
-                    <div class="total-row">
-                        <span>Total HT</span>
-                        <span>@currentFacture.TotalHT.ToString("N3") TND</span>
-                    </div>
-                    <div class="total-row text-warning">
-                        <span>Total TVA</span>
-                        <span>@currentFacture.TotalTVA.ToString("N3") TND</span>
-                    </div>
-                    @if (currentFacture.TimbreFiscalApplique)
-                    {
-                        <div class="total-row text-muted">
-                            <span>Timbre Fiscal</span>
-                            <span>@currentFacture.MontantTimbre.ToString("N3") TND</span>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label fw-bold">Date *</label>
+                    <input type="date" class="form-control" @bind="currentFacture.DateFacture" />
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label fw-bold">Timbre Fiscal</label>
+                    <div class="input-group">
+                        <div class="input-group-text">
+                            <input type="checkbox" @bind="currentFacture.TimbreFiscalApplique" />
                         </div>
-                    }
-                    <div class="total-row total-ttc">
-                        <span>TOTAL TTC</span>
-                        <span>@currentFacture.TotalTTC.ToString("N3") TND</span>
+                        <input type="number" class="form-control" @bind="currentFacture.MontantTimbre"
+                               disabled="@(!currentFacture.TimbreFiscalApplique)" step="0.001" />
+                        <span class="input-group-text">TND</span>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="mb-3">
-            <label class="form-label">Notes</label>
-            <textarea class="form-control" @bind="currentFacture.Notes" rows="2"></textarea>
-        </div>
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Lignes de Facture</h6>
+                    <button class="btn btn-sm btn-success" @onclick="AjouterLigne">
+                        <i class="bi bi-plus-lg"></i> Ajouter une ligne
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table mb-0">
+                        <thead class="table-secondary">
+                            <tr>
+                                <th>Produit</th>
+                                <th class="text-center" style="width:100px">Qté</th>
+                                <th class="text-end" style="width:130px">Prix HT</th>
+                                <th class="text-center" style="width:80px">TVA %</th>
+                                <th class="text-end" style="width:130px">Montant HT</th>
+                                <th class="text-end" style="width:130px">Montant TTC</th>
+                                <th style="width:50px"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ligne in currentFacture.Lignes)
+                            {
+                                <tr>
+                                    <td>
+                                        <select class="form-select form-select-sm" @bind="ligne.ProduitId"
+                                                @bind:after="() => OnProduitChange(ligne)">
+                                            <option value="0">-- Produit --</option>
+                                            @foreach (var p in allProduits)
+                                            { <option value="@p.Id">@p.Designation</option> }
+                                        </select>
+                                    </td>
+                                    <td><input type="number" class="form-control form-control-sm text-center" @bind="ligne.Quantite" min="1" /></td>
+                                    <td>
+                                        <input type="text" class="form-control form-control-sm text-end"
+                                               value="@ligne.PrixUnitaireHT.ToString("N3")"
+                                               readonly
+                                               style="background-color:#e9ecef;cursor:not-allowed;" />
+                                    </td>
+                                    <td class="text-center"><span class="badge bg-primary">@ligne.TauxTVAApplique%</span></td>
+                                    <td class="text-end">@ligne.MontantHT.ToString("N3")</td>
+                                    <td class="text-end fw-bold">@ligne.MontantTTC.ToString("N3")</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => SupprimerLigne(ligne)">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-        <div class="d-flex gap-2">
+            <div class="row justify-content-end">
+                <div class="col-md-4">
+                    <div class="totals-card">
+                        <div class="total-row"><span>Total HT</span><span>@currentFacture.TotalHT.ToString("N3") TND</span></div>
+                        <div class="total-row text-warning"><span>Total TVA</span><span>@currentFacture.TotalTVA.ToString("N3") TND</span></div>
+                        @if (currentFacture.TimbreFiscalApplique)
+                        {
+                            <div class="total-row text-muted"><span>Timbre Fiscal</span><span>@currentFacture.MontantTimbre.ToString("N3") TND</span></div>
+                        }
+                        <div class="total-row total-ttc"><span>TOTAL TTC</span><span>@currentFacture.TotalTTC.ToString("N3") TND</span></div>
+                    </div>
+                </div>
+            </div>
             <button class="btn btn-primary" @onclick="SaveFacture">
-                <i class="fas fa-save"></i> Enregistrer
+                <i class="bi bi-floppy"></i> Enregistrer
             </button>
-        </div>
+        }
+        else
+        {
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <p class="mb-1 text-muted small">N° Facture</p>
+                            <p class="fw-bold mb-0"><code>@currentFacture.Numero</code></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <p class="mb-1 text-muted small">Date</p>
+                            <p class="fw-bold mb-0">@currentFacture.DateFacture.ToString("dd/MM/yyyy")</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <p class="mb-1 text-muted small">Statut</p>
+                            <span class="badge @GetStatutClass(currentFacture.Statut) fs-6">@currentFacture.Statut</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header"><h6 class="mb-0">Détail des Lignes</h6></div>
+                <div class="card-body p-0">
+                    <table class="table mb-0">
+                        <thead class="table-secondary">
+                            <tr>
+                                <th>Produit</th>
+                                <th class="text-center">Qté</th>
+                                <th class="text-end">Prix HT</th>
+                                <th class="text-center">TVA %</th>
+                                <th class="text-end">Montant HT</th>
+                                <th class="text-end">Montant TTC</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ligne in currentFacture.Lignes)
+                            {
+                                <tr>
+                                    <td>@(ligne.Produit?.Designation ?? "")</td>
+                                    <td class="text-center">@ligne.Quantite</td>
+                                    <td class="text-end">@ligne.PrixUnitaireHT.ToString("N3")</td>
+                                    <td class="text-center"><span class="badge bg-primary">@ligne.TauxTVAApplique%</span></td>
+                                    <td class="text-end">@ligne.MontantHT.ToString("N3")</td>
+                                    <td class="text-end fw-bold">@ligne.MontantTTC.ToString("N3")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row justify-content-end">
+                <div class="col-md-4">
+                    <div class="totals-card">
+                        <div class="total-row"><span>Total HT</span><span>@currentFacture.TotalHT.ToString("N3") TND</span></div>
+                        <div class="total-row text-warning"><span>Total TVA</span><span>@currentFacture.TotalTVA.ToString("N3") TND</span></div>
+                        @if (currentFacture.TimbreFiscalApplique)
+                        {
+                            <div class="total-row text-muted"><span>Timbre Fiscal</span><span>@currentFacture.MontantTimbre.ToString("N3") TND</span></div>
+                        }
+                        <div class="total-row total-ttc"><span>TOTAL TTC</span><span>@currentFacture.TotalTTC.ToString("N3") TND</span></div>
+                    </div>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(currentFacture.Notes))
+            {
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <p class="text-muted small mb-1">Notes</p>
+                        <p class="mb-0">@currentFacture.Notes</p>
+                    </div>
+                </div>
+            }
+        }
     }
 }
 
 @code {
     [Parameter] public int? Id { get; set; }
 
-    private List<Facture> factures = new();
-    private List<Client> allClients = new();
-    private List<Produit> allProduits = new();
-    private Facture? currentFacture;
-    private bool isLoading = true;
+    private List<Facture>  factures     = new();
+    private List<Client>   allClients   = new();
+    private List<Produit>  allProduits  = new();
+    private Facture?       currentFacture;
+    private bool           isLoading    = true;
 
-    private int? filterClientId;
+    private int?      filterClientId;
     private DateTime? filterFrom;
     private DateTime? filterTo;
 
+    private bool showAsCards = false;
+    private string toggleIconClass => showAsCards ? "bi bi-table" : "bi bi-grid-3x3-gap";
+    private void ToggleView() => showAsCards = !showAsCards;
+
     protected override async Task OnInitializedAsync()
     {
-        allClients = await ClientService.GetAllAsync();
+        if (Session.EstAdmin)
+            allClients = await ClientService.GetAllAsync();
         allProduits = await ProduitService.GetAllAsync();
         await LoadPageAsync();
     }
 
     protected override async Task OnParametersSetAsync()
-    {
-        await LoadPageAsync();
-    }
+        => await LoadPageAsync();
 
     private async Task LoadPageAsync()
     {
         if (Id.HasValue)
         {
+            if (!Session.EstAdmin && Id.Value == 0) { Nav.NavigateTo("/factures"); return; }
+            if (!Session.EstAdmin && Id.Value != 0)
+            {
+                var f = await FactureService.GetByIdAsync(Id.Value);
+                if (f == null || f.ClientId != Session.Utilisateur?.ClientId)
+                { Nav.NavigateTo("/factures"); return; }
+            }
             currentFacture = Id.Value == 0
                 ? new Facture { DateFacture = DateTime.Today, Lignes = new List<LigneFacture>() }
-                : await FactureService.GetByIdAsync(Id.Value) ?? new Facture { Lignes = new List<LigneFacture>() };
+                : await FactureService.GetByIdAsync(Id.Value)
+                    ?? new Facture { Lignes = new List<LigneFacture>() };
         }
         else
         {
@@ -294,40 +375,39 @@ else
     private async Task LoadAsync()
     {
         isLoading = true;
-        factures = await FactureService.GetAllAsync(filterFrom, filterTo, filterClientId == 0 ? null : filterClientId);
+        var clientId = Session.EstAdmin
+            ? (filterClientId == 0 ? null : filterClientId)
+            : Session.Utilisateur?.ClientId;
+        factures = await FactureService.GetAllAsync(filterFrom, filterTo, clientId);
         isLoading = false;
     }
 
     private void NouvelleFacture() => Nav.NavigateTo("/factures/0");
     private void ViewFacture(int id) => Nav.NavigateTo($"/factures/{id}");
-
     private async Task ValiderFacture(int id) { await FactureService.ValiderAsync(id); await LoadAsync(); }
     private async Task SupprimerFacture(int id) { await FactureService.DeleteAsync(id); await LoadAsync(); }
 
     private void AjouterLigne()
-    {
-        currentFacture?.Lignes.Add(new LigneFacture { Quantite = 1 });
-    }
+        => currentFacture?.Lignes.Add(new LigneFacture { Quantite = 1 });
 
-    private void SupprimerLigne(LigneFacture ligne) => currentFacture?.Lignes.Remove(ligne);
+    private void SupprimerLigne(LigneFacture ligne)
+        => currentFacture?.Lignes.Remove(ligne);
 
     private void OnProduitChange(LigneFacture ligne)
     {
         var produit = allProduits.FirstOrDefault(p => p.Id == ligne.ProduitId);
         if (produit != null)
         {
-            ligne.PrixUnitaireHT   = produit.PrixUnitaireHT;
-            ligne.TauxTVAApplique  = (decimal)produit.TauxTVA;
+            ligne.PrixUnitaireHT  = produit.PrixUnitaireHT;
+            ligne.TauxTVAApplique = (decimal)produit.TauxTVA;
         }
     }
 
     private async Task SaveFacture()
     {
         if (currentFacture == null) return;
-        if (currentFacture.Id == 0)
-            await FactureService.CreateAsync(currentFacture);
-        else
-            await FactureService.UpdateAsync(currentFacture);
+        if (currentFacture.Id == 0) await FactureService.CreateAsync(currentFacture);
+        else                        await FactureService.UpdateAsync(currentFacture);
         Nav.NavigateTo("/factures");
     }
 
@@ -339,8 +419,8 @@ else
 
     private string GetStatutClass(StatutFacture s) => s switch
     {
-        StatutFacture.Validee  => "bg-success",
-        StatutFacture.Annulee  => "bg-danger",
-        _                      => "bg-warning text-dark"
+        StatutFacture.Validee => "bg-success",
+        StatutFacture.Annulee => "bg-danger",
+        _                     => "bg-warning text-dark"
     };
 }
